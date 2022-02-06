@@ -25,4 +25,4 @@ urlpatterns = [
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 
-#handler404 = "helpers.views.handle_not_found"
+handler404 = "core.views.handle_not_found"
