@@ -1,20 +1,32 @@
+import environ
 import os
 from pathlib import Path
 
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
+env = environ.Env(
+    # set casting, default value
+    DEBUG=(bool, False)
+)
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-0@qs=kuv=5+v91^!o)37+7pw%g5^hti65yeqcw8n@^5$h#^+pe'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-ALLOWED_HOSTS = []
+DEBUG = env('DEBUG')
+if DEBUG:
+    print('*** Debug: ON ***')
+    ALLOWED_HOSTS = ['*',]
+    SECRET_KEY = ['django-temp-key3%53&^y9r+m1g+j_vz+969tavq^i1umaixc43x1h4es8h^=@(v']
+    DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
+else:
+    ALLOWED_HOSTS = ['*',]
+    SECRET_KEY = env('SECRET_KEY')
 
 
 # Application definition
@@ -31,7 +43,14 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'core',
     'allauth.socialaccount.providers.google',
+    'allauth.socialaccount.providers.facebook',
+    'crispy_forms',
+    'website',
 ]
+
+
+CRISPY_TEMPLATE_PACK = 'uni_form'
+
 
 """
 Django AllAuth Settings
@@ -83,6 +102,39 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        }
+    },
+    'facebook': {
+        'METHOD': 'oauth2',
+        #'SDK_URL': '//connect.facebook.net/{locale}/sdk.js',
+        'SCOPE': ['email', 'public_profile'],
+        'AUTH_PARAMS': {'auth_type': 'reauthenticate'},
+        'INIT_PARAMS': {'cookie': True},
+        'FIELDS': [
+            'id',
+            'first_name',
+            'last_name',
+            'middle_name',
+            'name',
+            'name_format',
+            'picture',
+            'short_name'
+        ],
+        'EXCHANGE_TOKEN': True,
+        #'LOCALE_FUNC': 'path.to.callable',
+        'VERIFIED_EMAIL': False,
+        'VERSION': 'v7.0',
+    }
+}
+
 # Provider specific settings
 '''
 SOCIALACCOUNT_PROVIDERS = {
@@ -132,17 +184,10 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# Internationalization
-# https://docs.djangoproject.com/en/3.2/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_L10N = True
-
 USE_TZ = True
 
 
@@ -154,8 +199,5 @@ STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
